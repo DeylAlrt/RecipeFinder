@@ -8,16 +8,15 @@ import random
 class Recipe:
     """Represents a single recipe with its details"""
     
-    def __init__(self, meal_id, name, category, glass_type, alcoholic, instructions, thumbnail, ingredients):
+    def __init__(self, meal_id, name, category, area, instructions, thumbnail, ingredients):
         """
         Initialize recipe object
-        ARGUMENT PASSING: Constructor receives 8 arguments
+        ARGUMENT PASSING: Constructor receives 7 arguments
         """
         self.meal_id = meal_id
         self.name = name
         self.category = category
-        self.glass_type = glass_type
-        self.alcoholic = alcoholic
+        self.area = area
         self.instructions = instructions
         self.thumbnail = thumbnail
         self.ingredients = ingredients  # List of ingredient strings
@@ -86,8 +85,7 @@ class MealAPI:
                     meal_id=meal['idMeal'],
                     name=meal['strMeal'],
                     category=meal.get('strCategory', 'Unknown'),
-                    glass_type=meal.get('strGlass', 'Standard Glass'),
-                    alcoholic=meal.get('strAlcoholic', 'Non-Alcoholic'),
+                    area=meal.get('strArea', 'Unknown'),
                     instructions=meal['strInstructions'],
                     thumbnail=meal['strMealThumb'],
                     ingredients=ingredients
@@ -125,8 +123,7 @@ class MealAPI:
                     meal_id=meal['idMeal'],
                     name=meal['strMeal'],
                     category=meal.get('strCategory', 'Unknown'),
-                    glass_type=meal.get('strGlass', 'Standard Glass'),
-                    alcoholic=meal.get('strAlcoholic', 'Non-Alcoholic'),
+                    area=meal.get('strArea', 'Unknown'),
                     instructions=meal['strInstructions'],
                     thumbnail=meal['strMealThumb'],
                     ingredients=ingredients
@@ -179,9 +176,9 @@ class ChefApp:
         self.music_playing = True
         
         # Filter variables (initialize before creating frames)
-        self.filter_alcoholic = tk.BooleanVar(value=False)
-        self.filter_non_alcoholic = tk.BooleanVar(value=False)
-        self.filter_optional = tk.BooleanVar(value=False)
+        self.filter_chicken = tk.BooleanVar(value=False)
+        self.filter_beef = tk.BooleanVar(value=False)
+        self.filter_seafood = tk.BooleanVar(value=False)
         
         # Create main container
         self.main_container = tk.Frame(self.root, bg=self.colors['bg'])
@@ -264,17 +261,12 @@ class ChefApp:
         filter_frame = tk.Frame(left_section, bg=self.colors['bg'])
         filter_frame.pack(anchor=tk.W)
         
-        # Filter variables
-        self.filter_alcoholic = tk.BooleanVar(value=False)
-        self.filter_non_alcoholic = tk.BooleanVar(value=False)
-        self.filter_optional = tk.BooleanVar(value=False)
-        
         tk.Checkbutton(
             filter_frame, 
-            text="Alcoholic", 
+            text="Chicken", 
             bg=self.colors['bg'], 
             font=("Segoe UI", 9),
-            variable=self.filter_alcoholic,
+            variable=self.filter_chicken,
             command=self.apply_filters,
             fg=self.colors['text_dark'],
             activebackground=self.colors['bg'],
@@ -283,10 +275,10 @@ class ChefApp:
         
         tk.Checkbutton(
             filter_frame, 
-            text="Non-Alcoholic", 
+            text="Beef", 
             bg=self.colors['bg'], 
             font=("Segoe UI", 9),
-            variable=self.filter_non_alcoholic,
+            variable=self.filter_beef,
             command=self.apply_filters,
             fg=self.colors['text_dark'],
             activebackground=self.colors['bg'],
@@ -295,10 +287,10 @@ class ChefApp:
         
         tk.Checkbutton(
             filter_frame, 
-            text="Optional Alcohol", 
+            text="Seafood", 
             bg=self.colors['bg'], 
             font=("Segoe UI", 9),
-            variable=self.filter_optional,
+            variable=self.filter_seafood,
             command=self.apply_filters,
             fg=self.colors['text_dark'],
             activebackground=self.colors['bg'],
@@ -348,7 +340,7 @@ class ChefApp:
         
         tk.Label(
             dialogue_frame,
-            text="💬 Random Dialogue",
+            text="",
             font=("Segoe UI", 8, "italic"),
             bg='white',
             fg=self.colors['text_light']
@@ -440,10 +432,10 @@ class ChefApp:
         
         # Menu items with colors
         menu_items = [
-            ("• View All drinks", lambda: self.show_frame("main"), self.colors['primary']),
-            ("• Get Random Drink", self.get_random_recipe, self.colors['secondary']),
-            ("• Get Specific Drink", self.show_search_dialog, self.colors['success']),
-            ("• Filter Drinks", self.show_search_dialog, self.colors['warning'])
+            ("• View All Recipe", lambda: self.show_frame("main"), self.colors['primary']),
+            ("• Get Random Recipe", self.get_random_recipe, self.colors['secondary']),
+            ("• Get Specific Recipe", self.show_search_dialog, self.colors['success']),
+            ("• Filter Recipe", self.show_search_dialog, self.colors['warning'])
         ]
         
         for text, command, color in menu_items:
@@ -483,21 +475,21 @@ class ChefApp:
         filter_frame = tk.Frame(left_section, bg=self.colors['bg'])
         filter_frame.pack(anchor=tk.W)
         
-        tk.Checkbutton(filter_frame, text="Alcoholic", bg=self.colors['bg'], 
+        tk.Checkbutton(filter_frame, text="Chicken", bg=self.colors['bg'], 
                       font=("Segoe UI", 9), fg=self.colors['text_dark'],
-                      variable=self.filter_alcoholic,
+                      variable=self.filter_chicken,
                       command=self.apply_filters,
                       activebackground=self.colors['bg'],
                       selectcolor='white').pack(anchor=tk.W, pady=2)
-        tk.Checkbutton(filter_frame, text="Non-Alcoholic", bg=self.colors['bg'], 
+        tk.Checkbutton(filter_frame, text="Beef", bg=self.colors['bg'], 
                       font=("Segoe UI", 9), fg=self.colors['text_dark'],
-                      variable=self.filter_non_alcoholic,
+                      variable=self.filter_beef,
                       command=self.apply_filters,
                       activebackground=self.colors['bg'],
                       selectcolor='white').pack(anchor=tk.W, pady=2)
-        tk.Checkbutton(filter_frame, text="Optional Alcohol", bg=self.colors['bg'], 
+        tk.Checkbutton(filter_frame, text="Seafood", bg=self.colors['bg'], 
                       font=("Segoe UI", 9), fg=self.colors['text_dark'],
-                      variable=self.filter_optional,
+                      variable=self.filter_seafood,
                       command=self.apply_filters,
                       activebackground=self.colors['bg'],
                       selectcolor='white').pack(anchor=tk.W, pady=2)
@@ -537,7 +529,7 @@ class ChefApp:
         
         tk.Label(
             dialogue_frame,
-            text="💬 Random Dialogue",
+            text="",
             font=("Segoe UI", 8, "italic"),
             bg='white',
             fg=self.colors['text_light']
@@ -580,7 +572,7 @@ class ChefApp:
         
         self.detail_name_label = tk.Label(
             info_frame,
-            text="Name of Drink",
+            text="Recipe Name",
             font=("Segoe UI", 12, "bold"),
             bg='white',
             fg=self.colors['primary'],
@@ -590,7 +582,7 @@ class ChefApp:
         
         self.detail_category_label = tk.Label(
             info_frame,
-            text="Drink Category",
+            text="Category",
             font=("Segoe UI", 10),
             bg='white',
             fg=self.colors['text_dark'],
@@ -598,34 +590,15 @@ class ChefApp:
         )
         self.detail_category_label.pack(anchor="w", pady=2)
         
-        self.detail_glass_label = tk.Label(
+        self.detail_area_label = tk.Label(
             info_frame,
-            text="Type of Glass",
+            text="Cuisine",
             font=("Segoe UI", 10),
             bg='white',
             fg=self.colors['text_dark'],
             anchor="w"
         )
-        self.detail_glass_label.pack(anchor="w", pady=2)
-        
-        self.detail_alcoholic_label = tk.Label(
-            info_frame,
-            text="Alcoholic",
-            font=("Segoe UI", 10),
-            bg='white',
-            fg=self.colors['success'],
-            anchor="w"
-        )
-        self.detail_alcoholic_label.pack(anchor="w", pady=2)
-        
-        tk.Label(
-            info_frame,
-            text="IBA Category",
-            font=("Segoe UI", 10),
-            bg='white',
-            fg=self.colors['text_light'],
-            anchor="w"
-        ).pack(anchor="w", pady=2)
+        self.detail_area_label.pack(anchor="w", pady=2)
         
         # Right side - Ingredients
         right_detail = tk.Frame(detail_content, bg='white')
@@ -802,17 +775,20 @@ class ChefApp:
             return
         
         # If no filters selected, show all
-        if not (self.filter_alcoholic.get() or self.filter_non_alcoholic.get() or self.filter_optional.get()):
+        if not (self.filter_chicken.get() or self.filter_beef.get() or self.filter_seafood.get()):
             self.current_recipes = self.all_recipes[:]
         else:
-            # Filter based on selection
+            # Filter based on category or name containing the protein
             self.current_recipes = []
             for recipe in self.all_recipes:
-                if self.filter_alcoholic.get() and "Alcoholic" in recipe.alcoholic and "Non" not in recipe.alcoholic:
+                category_lower = recipe.category.lower()
+                name_lower = recipe.name.lower()
+                
+                if self.filter_chicken.get() and ("chicken" in category_lower or "chicken" in name_lower):
                     self.current_recipes.append(recipe)
-                elif self.filter_non_alcoholic.get() and "Non" in recipe.alcoholic:
+                elif self.filter_beef.get() and ("beef" in category_lower or "beef" in name_lower):
                     self.current_recipes.append(recipe)
-                elif self.filter_optional.get() and "Optional" in recipe.alcoholic:
+                elif self.filter_seafood.get() and ("seafood" in category_lower or "fish" in name_lower or "prawn" in name_lower or "salmon" in name_lower):
                     self.current_recipes.append(recipe)
         
         self.display_recipe_cards()
@@ -959,8 +935,7 @@ class ChefApp:
         # Update detail frame with recipe info
         self.detail_name_label.config(text=recipe.name)
         self.detail_category_label.config(text=f"📁 {recipe.category}")
-        self.detail_glass_label.config(text=f"🥃 {recipe.glass_type}")
-        self.detail_alcoholic_label.config(text=f"🍷 {recipe.alcoholic}")
+        self.detail_area_label.config(text=f"🌍 {recipe.area}")
         
         # Load recipe image
         try:
