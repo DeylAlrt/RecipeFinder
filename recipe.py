@@ -874,7 +874,7 @@ class ChefApp:
         try:
             response = requests.get(recipe.thumbnail, timeout=5)
             img_data = Image.open(BytesIO(response.content))
-            img_data = img_data.resize((120, 90), Image.Resampling.LANCZOS)
+            img_data = img_data.resize((520, 90), Image.Resampling.LANCZOS)
             photo = ImageTk.PhotoImage(img_data)
             image_label.config(image=photo)
             image_label.image = photo
