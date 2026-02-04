@@ -166,6 +166,11 @@ class ChefApp:
         
         self.root.configure(bg=self.colors['bg'])
         
+        # Create images cache directory
+        self.images_dir = "images"
+        if not os.path.exists(self.images_dir):
+            os.makedirs(self.images_dir)
+        
         # Initialize pygame mixer for music
         pygame.mixer.init()
         
@@ -200,30 +205,53 @@ class ChefApp:
         self.show_frame("main")
     
     def setup_music(self):
-        """Download and setup jazz restaurant background music"""
+        """Load and play local jazz restaurant background music"""
         try:
-            # Use a free jazz music from a royalty-free source
-            # This is a smooth jazz track perfect for a restaurant atmosphere
-            music_url = "https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3"
+            music_path = "restaurant_jazz.mp3"
             
-            music_path = "/tmp/restaurant_jazz.mp3"
-            
-            # Check if music already exists
+            # Check if music file exists
             if not os.path.exists(music_path):
-                print("Downloading jazz music...")
-                response = requests.get(music_url, timeout=15)
-                with open(music_path, 'wb') as f:
-                    f.write(response.content)
-                print("Music downloaded successfully!")
+                print("Warning: restaurant_jazz.mp3 not found. Running without music.")
+                print("To add music: Download a jazz MP3 and save it as 'restaurant_jazz.mp3' in the same folder.")
+                return
             
             # Load and play the music
             pygame.mixer.music.load(music_path)
             pygame.mixer.music.set_volume(0.3)  # Set to 30% volume for background
             pygame.mixer.music.play(-1)  # Loop indefinitely
+            print("Jazz music loaded successfully!")
             
         except Exception as e:
             print(f"Could not load music: {e}")
             # Continue without music if it fails
+    
+    def load_image_cached(self, url, meal_id, width, height):
+        """
+        Load image from cache or download if not cached
+        Returns PIL ImageTk.PhotoImage object
+        """
+        # Create filename based on meal_id
+        cache_filename = os.path.join(self.images_dir, f"{meal_id}.jpg")
+        
+        try:
+            # Check if image exists in cache
+            if os.path.exists(cache_filename):
+                # Load from cache
+                img_data = Image.open(cache_filename)
+            else:
+                # Download and save to cache
+                response = requests.get(url, timeout=5)
+                img_data = Image.open(BytesIO(response.content))
+                # Save to cache
+                img_data.save(cache_filename, "JPEG")
+            
+            # Resize and return
+            img_data = img_data.resize((width, height), Image.Resampling.LANCZOS)
+            return ImageTk.PhotoImage(img_data)
+            
+        except Exception as e:
+            print(f"Error loading image: {e}")
+            return None
     
     def create_main_frame(self):
         """Create the main view frame with recipe cards"""
@@ -939,17 +967,13 @@ class ChefApp:
         image_label = tk.Label(card_frame, bg='#f5f5f5')
         image_label.pack(pady=(5, 5), padx=5)
         
-        # Try to load actual image
-        try:
-            response = requests.get(recipe.thumbnail, timeout=5)
-            img_data = Image.open(BytesIO(response.content))
-            # Resize to fit the card perfectly (120x90 pixels)
-            img_data = img_data.resize((120, 90), Image.Resampling.LANCZOS)
-            photo = ImageTk.PhotoImage(img_data)
+        # Load image using cache system
+        photo = self.load_image_cached(recipe.thumbnail, recipe.meal_id, 120, 90)
+        if photo:
             image_label.config(image=photo, width=120, height=90)
             image_label.image = photo
             self.recipe_images[recipe.meal_id] = photo
-        except:
+        else:
             image_label.config(width=120, height=90)
         
         # Recipe name with color
@@ -1007,15 +1031,12 @@ class ChefApp:
         self.detail_category_label.config(text=f"📁 {recipe.category}")
         self.detail_area_label.config(text=f"🌍 {recipe.area}")
         
-        # Load recipe image
-        try:
-            response = requests.get(recipe.thumbnail, timeout=5)
-            img_data = Image.open(BytesIO(response.content))
-            img_data = img_data.resize((150, 150), Image.Resampling.LANCZOS)
-            photo = ImageTk.PhotoImage(img_data)
+        # Load recipe image using cache system
+        photo = self.load_image_cached(recipe.thumbnail, recipe.meal_id, 150, 150)
+        if photo:
             self.detail_image_label.config(image=photo)
             self.detail_image_label.image = photo
-        except:
+        else:
             self.detail_image_label.config(image="", text="No Image")
         
         # Display ingredients in two columns with emojis
