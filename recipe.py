@@ -4,6 +4,8 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 import requests
 from io import BytesIO
 import random
+import pygame
+import os
 
 class Recipe:
     """Represents a single recipe with its details"""
@@ -164,6 +166,12 @@ class ChefApp:
         
         self.root.configure(bg=self.colors['bg'])
         
+        # Initialize pygame mixer for music
+        pygame.mixer.init()
+        
+        # Download and setup jazz music
+        self.setup_music()
+        
         # OOP: Create instance of MealAPI class
         self.api = MealAPI()
         
@@ -191,7 +199,34 @@ class ChefApp:
         # Show main frame initially
         self.show_frame("main")
     
+    def setup_music(self):
+        """Download and setup jazz restaurant background music"""
+        try:
+            # Use a free jazz music from a royalty-free source
+            # This is a smooth jazz track perfect for a restaurant atmosphere
+            music_url = "https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3"
+            
+            music_path = "/tmp/restaurant_jazz.mp3"
+            
+            # Check if music already exists
+            if not os.path.exists(music_path):
+                print("Downloading jazz music...")
+                response = requests.get(music_url, timeout=15)
+                with open(music_path, 'wb') as f:
+                    f.write(response.content)
+                print("Music downloaded successfully!")
+            
+            # Load and play the music
+            pygame.mixer.music.load(music_path)
+            pygame.mixer.music.set_volume(0.3)  # Set to 30% volume for background
+            pygame.mixer.music.play(-1)  # Loop indefinitely
+            
+        except Exception as e:
+            print(f"Could not load music: {e}")
+            # Continue without music if it fails
+    
     def create_main_frame(self):
+        """Create the main view frame with recipe cards"""
         """Create the main view frame with recipe cards"""
         self.main_frame = tk.Frame(self.main_container, bg=self.colors['bg'])
         
@@ -306,19 +341,19 @@ class ChefApp:
         avatar_dialogue.pack()
         
         # Avatar with better styling
-        avatar_canvas = tk.Canvas(avatar_dialogue, width=80, height=80, bg=self.colors['bg'], highlightthickness=0)
+        avatar_canvas = tk.Canvas(avatar_dialogue, width=100, height=100, bg=self.colors['bg'], highlightthickness=0)
         avatar_canvas.pack(side=tk.LEFT, padx=10)
         
-        # Draw a colorful avatar
-        avatar_canvas.create_oval(5, 5, 75, 75, fill=self.colors['avatar_bg'], outline=self.colors['primary'], width=3)
+        # Draw a colorful avatar (larger size)
+        avatar_canvas.create_oval(5, 5, 95, 95, fill=self.colors['avatar_bg'], outline=self.colors['primary'], width=4)
         # Chef hat
-        avatar_canvas.create_oval(20, 15, 60, 35, fill='white', outline='white')
-        avatar_canvas.create_rectangle(25, 30, 55, 45, fill='white', outline='white')
+        avatar_canvas.create_oval(25, 15, 75, 45, fill='white', outline='white')
+        avatar_canvas.create_rectangle(30, 40, 70, 60, fill='white', outline='white')
         # Eyes
-        avatar_canvas.create_oval(28, 40, 35, 47, fill=self.colors['text_dark'])
-        avatar_canvas.create_oval(45, 40, 52, 47, fill=self.colors['text_dark'])
+        avatar_canvas.create_oval(35, 50, 45, 60, fill=self.colors['text_dark'])
+        avatar_canvas.create_oval(55, 50, 65, 60, fill=self.colors['text_dark'])
         # Smile
-        avatar_canvas.create_arc(30, 45, 50, 60, start=0, extent=-180, style=tk.ARC, width=2, outline=self.colors['text_dark'])
+        avatar_canvas.create_arc(35, 60, 65, 80, start=0, extent=-180, style=tk.ARC, width=3, outline=self.colors['text_dark'])
         
         # Dialogue bubble with shadow effect
         dialogue_shadow = tk.Frame(avatar_dialogue, bg='#B0B0B0')
@@ -502,16 +537,16 @@ class ChefApp:
         avatar_dialogue.pack()
         
         # Avatar
-        avatar_canvas = tk.Canvas(avatar_dialogue, width=80, height=80, bg=self.colors['bg'], highlightthickness=0)
+        avatar_canvas = tk.Canvas(avatar_dialogue, width=100, height=100, bg=self.colors['bg'], highlightthickness=0)
         avatar_canvas.pack(side=tk.LEFT, padx=10)
         
-        # Draw colorful avatar
-        avatar_canvas.create_oval(5, 5, 75, 75, fill=self.colors['avatar_bg'], outline=self.colors['primary'], width=3)
-        avatar_canvas.create_oval(20, 15, 60, 35, fill='white', outline='white')
-        avatar_canvas.create_rectangle(25, 30, 55, 45, fill='white', outline='white')
-        avatar_canvas.create_oval(28, 40, 35, 47, fill=self.colors['text_dark'])
-        avatar_canvas.create_oval(45, 40, 52, 47, fill=self.colors['text_dark'])
-        avatar_canvas.create_arc(30, 45, 50, 60, start=0, extent=-180, style=tk.ARC, width=2, outline=self.colors['text_dark'])
+        # Draw colorful avatar (larger size)
+        avatar_canvas.create_oval(5, 5, 95, 95, fill=self.colors['avatar_bg'], outline=self.colors['primary'], width=4)
+        avatar_canvas.create_oval(25, 15, 75, 45, fill='white', outline='white')
+        avatar_canvas.create_rectangle(30, 40, 70, 60, fill='white', outline='white')
+        avatar_canvas.create_oval(35, 50, 45, 60, fill=self.colors['text_dark'])
+        avatar_canvas.create_oval(55, 50, 65, 60, fill=self.colors['text_dark'])
+        avatar_canvas.create_arc(35, 60, 65, 80, start=0, extent=-180, style=tk.ARC, width=3, outline=self.colors['text_dark'])
         
         # Dialogue bubble
         dialogue_frame = tk.Frame(avatar_dialogue, bg='white', relief=tk.RAISED, bd=0,
@@ -805,20 +840,54 @@ class ChefApp:
         
         if self.music_playing:
             # Music is now playing
+            pygame.mixer.music.unpause()
             self.music_btn_main.config(text="🔇 Mute Music")
             self.music_btn_detail.config(text="🔇 Mute Music")
             self.dialogue_label.config(text="Enjoying the\nmusic! 🎵")
         else:
             # Music is now muted
+            pygame.mixer.music.pause()
             self.music_btn_main.config(text="🔊 Play Music")
             self.music_btn_detail.config(text="🔊 Play Music")
             self.dialogue_label.config(text="Music paused.\nSo quiet... 🤫")
     
     def view_all_recipes(self):
-        """View all recipes (search for common ingredient)"""
+        """View all recipes - fetch 3 chicken, 3 beef, and 3 seafood"""
         self.dialogue_label.config(text="Loading all\nrecipes! 📚")
         self.root.update()
-        self.search_recipes("chicken")
+        
+        # Fetch a mix of recipes
+        self.all_recipes = []
+        
+        # Fetch 3 chicken recipes
+        chicken_results = self.api.search_by_ingredient("chicken")
+        if chicken_results:
+            for meal in chicken_results[:3]:
+                recipe = self.api.get_recipe_details(meal['idMeal'])
+                if recipe:
+                    self.all_recipes.append(recipe)
+        
+        # Fetch 3 beef recipes
+        beef_results = self.api.search_by_ingredient("beef")
+        if beef_results:
+            for meal in beef_results[:3]:
+                recipe = self.api.get_recipe_details(meal['idMeal'])
+                if recipe:
+                    self.all_recipes.append(recipe)
+        
+        # Fetch 3 seafood recipes
+        seafood_results = self.api.search_by_ingredient("salmon")
+        if seafood_results:
+            for meal in seafood_results[:3]:
+                recipe = self.api.get_recipe_details(meal['idMeal'])
+                if recipe:
+                    self.all_recipes.append(recipe)
+        
+        # Apply filters (will show all if no filters are selected)
+        self.apply_filters()
+        
+        # Update dialogue
+        self.dialogue_label.config(text=f"Found {len(self.current_recipes)}\nrecipes! 🎉")
     
     def get_random_recipe(self):
         """Get a random recipe and show it"""
@@ -867,20 +936,21 @@ class ChefApp:
         card_frame.pack_propagate(False)
         
         # Image placeholder
-        image_label = tk.Label(card_frame, bg='#f5f5f5', width=16, height=7)
-        image_label.pack(pady=(5, 5))
+        image_label = tk.Label(card_frame, bg='#f5f5f5')
+        image_label.pack(pady=(5, 5), padx=5)
         
         # Try to load actual image
         try:
             response = requests.get(recipe.thumbnail, timeout=5)
             img_data = Image.open(BytesIO(response.content))
-            img_data = img_data.resize((520, 90), Image.Resampling.LANCZOS)
+            # Resize to fit the card perfectly (120x90 pixels)
+            img_data = img_data.resize((120, 90), Image.Resampling.LANCZOS)
             photo = ImageTk.PhotoImage(img_data)
-            image_label.config(image=photo)
+            image_label.config(image=photo, width=120, height=90)
             image_label.image = photo
             self.recipe_images[recipe.meal_id] = photo
         except:
-            pass
+            image_label.config(width=120, height=90)
         
         # Recipe name with color
         name_label = tk.Label(
